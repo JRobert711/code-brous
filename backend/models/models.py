@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+# backend/app/models/models.py
+from pydantic import BaseModel, validator
 from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from enum import Enum
+import re  # ← Agregar importación
 
 class SectorType(str, Enum):
     CIUDADANO = "ciudadano"
@@ -257,6 +259,44 @@ class AyudaEstatal(BaseModel):
     class Config:
         from_attributes = True
 
+# ========== MODELOS DE AUTENTICACIÓN ==========
+class LoginRequest(BaseModel):
+    dui: str
+    password: str
+    recaptcha_token: str
+
+    @validator('dui')
+    def validate_dui(cls, v):
+        if not re.match(r'^\d{8}-\d$', v):
+            raise ValueError('Formato DUI inválido')
+        return v
+
+class DocumentLoginRequest(BaseModel):
+    document_type: str
+    document_value: str
+    password: str
+    recaptcha_token: str
+
+class VoiceLoginRequest(BaseModel):
+    dui: str
+    audio_data: str
+
+class VoiceRegisterRequest(BaseModel):
+    dui: str
+    audio_data: str
+
+class SecurityLog(BaseModel):
+    id: int
+    usuario_id: Optional[int]
+    accion: str
+    descripcion: str
+    modulo_afectado: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # ========== MODELO COMPLETO DEL USUARIO ==========
 class UsuarioCompleto(Usuario):
     # Salud
@@ -287,22 +327,11 @@ class UsuarioCompleto(Usuario):
     
     permisos: List[PermisoType] = []
 
-class VoiceLoginRequest(BaseModel):
-    dui: str
-    audio_data: str
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: Usuario
+    permisos: List[PermisoType] = []
 
-class VoiceRegisterRequest(BaseModel):
-    dui: str
-    audio_data: str
-
-class SecurityLog(BaseModel):
-    id: int
-    usuario_id: Optional[int]
-    accion: str
-    descripcion: str
-    modulo_afectado: Optional[str] = None
-    ip_address: Optional[str] = None
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+class MessageResponse(BaseModel):
+    message: str
