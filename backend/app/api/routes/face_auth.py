@@ -28,15 +28,25 @@ class FaceAuthService:
         
         conn.close()
     
-    def register_face(self, image_data: bytes, user_id: int):
-        """Registrar nuevo rostro"""
-        # Convertir bytes a imagen
+    def decode_image(self, image_data: bytes):
+        """Decodificar bytes a imagen y validar"""
         nparr = np.frombuffer(image_data, np.uint8)
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        # Convertir BGR a RGB
+
+        if image is None:
+            raise HTTPException(
+                status_code=400,
+                detail="La imagen no se pudo decodificar. Verifica que sea JPG o PNG válido."
+            )
+
+        return image
+
+    def register_face(self, image_data: bytes, user_id: int):
+        """Registrar nuevo rostro"""
+
+        image = self.decode_image(image_data)
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+
         # Detectar rostros
         face_encodings = face_recognition.face_encodings(rgb_image)
         
@@ -63,10 +73,10 @@ class FaceAuthService:
     
     def verify_face(self, image_data: bytes):
         """Verificar rostro"""
-        nparr = np.frombuffer(image_data, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        image = self.decode_image(image_data)
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+
         face_encodings = face_recognition.face_encodings(rgb_image)
         
         if len(face_encodings) == 0:
@@ -80,6 +90,7 @@ class FaceAuthService:
             return self.known_face_ids[first_match_index]
         
         return None
+
 
 face_service = FaceAuthService()
 
