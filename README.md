@@ -66,8 +66,9 @@ uvicorn                 0.38.0
 watchfiles              1.1.1
 websockets              15.0.1
 
+IAS:
+DeepSeek
 
 
-
-
-Tecnolog[ias usadas en frontend]
+Tecnologias frontend:
+estan en el package.json
