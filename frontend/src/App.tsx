@@ -21,6 +21,7 @@ function App() {
           <Route path="/drones" element={<Drones />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/admin" element={<Admin />} />
+          
         </Routes>
       </Layout>
     </Router>
