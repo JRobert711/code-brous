@@ -80,7 +80,7 @@ const Biometria: React.FC = () => {
           fontWeight: "bold",
           fontSize: 24,
           textAlign: "center",
-          marginTop: 10,
+          marginTop: -2,
         }}
       >
         {faceDetected ? "¡Cara detectada!" : "No se detecta cara"}
