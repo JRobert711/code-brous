@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* Navegación */}
             <nav className="flex flex-wrap gap-2 justify-center lg:justify-end relative">
               {[
-                { path: "/", label: "INICIO" },
+                { path: "/dashboard", label: "INICIO" },
                 { path: "/usuarios", label: "USUARIOS" },
                 { path: "/biometria", label: "BIOMETRÍA" },
                 { path: "/drones", label: "VIGILANCIA" },

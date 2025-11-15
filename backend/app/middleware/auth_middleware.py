@@ -11,6 +11,7 @@ security = HTTPBearer()
 usuarios_autenticados = {}
 
 # Datos de usuarios de prueba para desarrollo
+# Datos de usuarios de prueba para desarrollo
 usuarios_prueba = [
     Usuario(
         id=1,
@@ -66,9 +67,31 @@ usuarios_prueba = [
         sector=SectorType.ADMIN,
         nivel_acceso=NivelAcceso.ADMIN,
         created_at=datetime(2024, 1, 5, 8, 0, 0)
+    ),
+    # Agregar usuarios faltantes
+    Usuario(
+        id=6,
+        dui="66666666-6",
+        nombres="Roberto José",
+        apellidos="Hernández Castro",
+        email="roberto.hernandez@email.com",
+        telefono="+503 6666-6666",
+        sector=SectorType.LABORAL,
+        nivel_acceso=NivelAcceso.LABORAL,
+        created_at=datetime(2024, 1, 3, 11, 0, 0)
+    ),
+    Usuario(
+        id=7,
+        dui="77777777-7",
+        nombres="Laura Beatriz",
+        apellidos="Silva Mendoza",
+        email="laura.silva@email.com",
+        telefono="+503 7777-7777",
+        sector=SectorType.SERVICIOS_SOCIALES,
+        nivel_acceso=NivelAcceso.SERVICIOS_SOCIALES,
+        created_at=datetime(2024, 1, 7, 13, 30, 0)
     )
 ]
-
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Usuario:
     """
     Obtener el usuario actual basado en el token de autenticación.
@@ -97,7 +120,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 async def get_optional_user(request: Request) -> Optional[Usuario]:
     """
     Obtener usuario actual, pero retorna None si no está autenticado.
-    Esta versión usa el request directamente para evitar problemas de tipos.
     """
     authorization = request.headers.get("Authorization")
     if not authorization:
@@ -159,36 +181,19 @@ def obtener_usuario_por_id(usuario_id: int) -> Optional[Usuario]:
     
     return None
 
-def crear_usuario_admin_por_defecto():
-    """Crear usuario admin por defecto si no existe"""
-    admin_existente = next((u for u in usuarios_prueba if u.sector == SectorType.ADMIN), None)
-    
-    if not admin_existente:
-        usuario_admin = Usuario(
-            id=999,
-            dui="00000000-0",
-            nombres="Administrador",
-            apellidos="del Sistema",
-            email="admin@sistema.com",
-            telefono="+503 0000-0000",
-            sector=SectorType.ADMIN,
-            nivel_acceso=NivelAcceso.ADMIN,
-            created_at=datetime.now()
-        )
-        usuarios_prueba.append(usuario_admin)
-        
-        # Crear token para el admin
-        token_admin = "test_token_999"
-        usuarios_autenticados[token_admin] = usuario_admin
-        print("✅ Usuario admin creado por defecto - Token: test_token_999")
-
 # Inicializar algunos tokens de prueba para desarrollo
 def inicializar_tokens_prueba():
     """Inicializar tokens de prueba para desarrollo"""
+    print("🔄 Inicializando tokens de prueba...")
     for usuario in usuarios_prueba:
         token_prueba = f"test_token_{usuario.id}"
         usuarios_autenticados[token_prueba] = usuario
+        print(f"   ✅ Token creado: {token_prueba} para {usuario.nombres} ({usuario.sector})")
+    
+    print("🎯 Tokens disponibles:")
+    for token, usuario in usuarios_autenticados.items():
+        if token.startswith("test_token_"):
+            print(f"   🔑 {token}: {usuario.nombres} {usuario.apellidos} - {usuario.sector} (Nivel {usuario.nivel_acceso})")
 
 # Ejecutar inicialización al importar el módulo
 inicializar_tokens_prueba()
-crear_usuario_admin_por_defecto()

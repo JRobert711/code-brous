@@ -16,13 +16,13 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Login />} />
           <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/biometria" element={<Biometria />} />
           <Route path="/drones" element={<Drones />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={< Dashboard/>} />
           
           
         </Routes>
