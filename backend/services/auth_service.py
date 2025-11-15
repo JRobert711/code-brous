@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from ..models.models import SectorType, PermisoType, NivelAcceso, Usuario
+from backend.models.models import SectorType, PermisoType, NivelAcceso, Usuario
 from backend.app.middleware.auth_middleware import obtener_usuario_por_id
 
 class AuthorizationService:

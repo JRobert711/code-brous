@@ -306,3 +306,40 @@ class SecurityLog(BaseModel):
 
     class Config:
         from_attributes = True
+        
+        # ========== MODELOS DE AUTENTICACIÓN ==========
+from pydantic import validator
+import re
+
+class LoginRequest(BaseModel):
+    dui: str
+    password: str
+    captcha_token: str
+
+    @validator('dui')
+    def validate_dui(cls, v):
+        if not re.match(r'^\d{8}-\d$', v):
+            raise ValueError('Formato DUI inválido. Use: 12345678-9')
+        return v
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: Usuario
+    permisos: List[PermisoType] = []
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: Usuario
+    permisos: List[PermisoType] = []
+
+class MessageResponse(BaseModel):
+    message: str
+
+# Modelo para login con documento alternativo
+class DocumentLoginRequest(BaseModel):
+    document_type: str
+    document_value: str
+    password: str
+    captcha_token: str
