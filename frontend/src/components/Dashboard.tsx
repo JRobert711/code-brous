@@ -1,57 +1,55 @@
-// src/components/Dashboard.tsx
 import { useEffect, useState } from 'react';
 import { 
-  ciudadanoService, 
-  droneService, 
-  Ciudadano, 
-  Drone,
+  usuarioService, 
+  dashboardService,
+  Usuario,
+  DashboardStats
 } from '../services/api';
 
-interface DashboardStats {
-  totalCiudadanos: number;
-  dronesActivos: number;
-  totalDrones: number;
-  registrosBiometricos: number;
-  ciudadanosRecientes: number;
-}
-
 const Dashboard = () => {
-  const [ciudadanos, setCiudadanos] = useState<Ciudadano[]>([]);
-  const [drones, setDrones] = useState<Drone[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
-    totalCiudadanos: 0,
-    dronesActivos: 0,
-    totalDrones: 0,
-    registrosBiometricos: 0,
-    ciudadanosRecientes: 0
+    totalUsuarios: 0,
+    usuariosActivos: 0,
+    registrosSalud: 0,
+    registrosEducacion: 0,
+    registrosLaborales: 0,
+    registrosJudiciales: 0,
+    registrosServiciosSociales: 0
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [ciudadanosRes, dronesRes] = await Promise.all([
-          ciudadanoService.getAll(),
-          droneService.getAll()
+        const [usuariosRes] = await Promise.all([
+          usuarioService.getAll()
         ]);
         
-        setCiudadanos(ciudadanosRes.data);
-        setDrones(dronesRes.data);
+        setUsuarios(usuariosRes.data);
 
         // Calcular estadísticas básicas
         const ahora = new Date();
         const ultimaSemana = new Date(ahora.setDate(ahora.getDate() - 7));
         
-        const ciudadanosRecientes = ciudadanosRes.data.filter((c: Ciudadano) => 
-          c.fecha_creacion && new Date(c.fecha_creacion) > ultimaSemana
+        const usuariosRecientes = usuariosRes.data.filter((u: Usuario) => 
+          u.created_at && new Date(u.created_at) > ultimaSemana
         ).length;
 
+        const usuariosActivos = usuariosRes.data.filter((u: Usuario) => 
+          u.is_active !== false
+        ).length;
+
+        // Por ahora usamos datos estáticos para los registros de módulos
+        // En un sistema real, estos vendrían del backend
         setStats({
-          totalCiudadanos: ciudadanosRes.data.length,
-          dronesActivos: dronesRes.data.filter((d: Drone) => d.estado === 'activo').length,
-          totalDrones: dronesRes.data.length,
-          registrosBiometricos: 0, // Placeholder por ahora
-          ciudadanosRecientes
+          totalUsuarios: usuariosRes.data.length,
+          usuariosActivos,
+          registrosSalud: 45, // Placeholder
+          registrosEducacion: 23, // Placeholder
+          registrosLaborales: 67, // Placeholder
+          registrosJudiciales: 12, // Placeholder
+          registrosServiciosSociales: 34 // Placeholder
         });
 
       } catch (error) {
@@ -71,7 +69,7 @@ const Dashboard = () => {
     icon: string; 
     color: string;
   }) => (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 shadow-lg">
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-gray-400 text-sm font-medium mb-2">{title}</p>
@@ -100,7 +98,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Panel de Control</h1>
-          <p className="text-gray-400">Resumen general del sistema de vigilancia</p>
+          <p className="text-gray-400">Sistema Nacional de Identidad - Resumen General</p>
         </div>
         <div className="text-sm text-gray-400">
           Última actualización: <span className="text-green-400">Ahora</span>
@@ -110,125 +108,178 @@ const Dashboard = () => {
       {/* Estadísticas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card 
-          title="Ciudadanos Registrados" 
-          value={stats.totalCiudadanos}
+          title="Usuarios Registrados" 
+          value={stats.totalUsuarios}
           subtitle="Total en el sistema"
           icon="👥"
           color="text-blue-400"
         />
         
         <Card 
-          title="Drones Activos" 
-          value={stats.dronesActivos}
-          subtitle={`de ${stats.totalDrones} totales`}
-          icon="🚁"
+          title="Usuarios Activos" 
+          value={stats.usuariosActivos}
+          subtitle="Activos en la plataforma"
+          icon="✅"
           color="text-green-400"
         />
         
         <Card 
-          title="Registros Biométricos" 
-          value={stats.registrosBiometricos}
-          subtitle="Huellas y reconocimiento"
-          icon="🔒"
-          color="text-purple-400"
+          title="Registros de Salud" 
+          value={stats.registrosSalud}
+          subtitle="Historial médico"
+          icon="🏥"
+          color="text-red-400"
         />
         
         <Card 
-          title="Nuevos Esta Semana" 
-          value={stats.ciudadanosRecientes}
-          subtitle="Registros recientes"
-          icon="🆕"
+          title="Registros Educativos" 
+          value={stats.registrosEducacion}
+          subtitle="Títulos y certificaciones"
+          icon="🎓"
+          color="text-purple-400"
+        />
+      </div>
+
+      {/* Segunda Fila de Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card 
+          title="Registros Laborales" 
+          value={stats.registrosLaborales}
+          subtitle="Experiencia y habilidades"
+          icon="💼"
           color="text-yellow-400"
+        />
+        
+        <Card 
+          title="Registros Judiciales" 
+          value={stats.registrosJudiciales}
+          subtitle="Antecedentes y licencias"
+          icon="⚖️"
+          color="text-orange-400"
+        />
+        
+        <Card 
+          title="Servicios Sociales" 
+          value={stats.registrosServiciosSociales}
+          subtitle="Pensiones y subsidios"
+          icon="🏛️"
+          color="text-indigo-400"
         />
       </div>
 
       {/* Grid Inferior */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Drones Activos */}
+        {/* Usuarios por Sector */}
         <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-white">Drones en Operación</h2>
-            <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
-              {stats.dronesActivos} activos
+            <h2 className="text-xl font-semibold text-white">Usuarios por Sector</h2>
+            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+              {stats.totalUsuarios} total
             </span>
           </div>
           <div className="space-y-3">
-            {drones.slice(0, 6).map((drone) => (
+            {Object.entries(
+              usuarios.reduce((acc: {[key: string]: number}, usuario) => {
+                acc[usuario.sector] = (acc[usuario.sector] || 0) + 1;
+                return acc;
+              }, {})
+            ).map(([sector, count]) => (
               <div 
-                key={drone.id} 
-                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg"
+                key={sector} 
+                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
-                    drone.estado === 'activo' ? 'bg-green-500' : 
-                    drone.estado === 'mantenimiento' ? 'bg-yellow-500' : 'bg-red-500'
+                    sector === 'ciudadano' ? 'bg-blue-500' : 
+                    sector === 'medico' ? 'bg-green-500' : 
+                    sector === 'educativo' ? 'bg-purple-500' :
+                    sector === 'judicial' ? 'bg-orange-500' :
+                    sector === 'laboral' ? 'bg-yellow-500' :
+                    sector === 'servicios_sociales' ? 'bg-indigo-500' :
+                    'bg-red-500'
                   }`}></div>
                   <div>
-                    <p className="font-medium text-white">{drone.modelo}</p>
-                    <p className="text-sm text-gray-400">{drone.ubicacion || 'Ubicación no disponible'}</p>
+                    <p className="font-medium text-white capitalize">
+                      {sector.replace('_', ' ')}
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {count} usuario{count !== 1 ? 's' : ''}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                    drone.estado === 'activo' 
-                      ? 'bg-green-500/20 text-green-400' 
-                      : drone.estado === 'mantenimiento'
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-red-500/20 text-red-400'
-                  }`}>
-                    {drone.estado}
+                  <span className="text-xs text-gray-400">
+                    {((count / stats.totalUsuarios) * 100).toFixed(1)}%
                   </span>
                 </div>
               </div>
             ))}
-            {drones.length === 0 && (
+            {usuarios.length === 0 && (
               <div className="text-center py-8 text-gray-400">
-                <div className="text-4xl mb-2">🚁</div>
-                <p>No hay drones registrados</p>
+                <div className="text-4xl mb-2">👥</div>
+                <p>No hay usuarios registrados</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Ciudadanos Recientes */}
+        {/* Usuarios Recientes */}
         <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-white">Ciudadanos Recientes</h2>
-            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-              {stats.ciudadanosRecientes} nuevos
+            <h2 className="text-xl font-semibold text-white">Usuarios Recientes</h2>
+            <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+              {usuarios.filter(u => {
+                const unaSemanaAtras = new Date();
+                unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
+                return u.created_at && new Date(u.created_at) > unaSemanaAtras;
+              }).length} nuevos
             </span>
           </div>
           <div className="space-y-3">
-            {ciudadanos.slice(0, 6).map((ciudadano) => (
+            {usuarios
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .slice(0, 6)
+              .map((usuario) => (
               <div 
-                key={ciudadano.id} 
-                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg"
+                key={usuario.id} 
+                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
                     <span className="text-blue-400 font-semibold">
-                      {ciudadano.nombre.charAt(0)}
+                      {usuario.nombres.charAt(0)}{usuario.apellidos.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-white">{ciudadano.nombre}</p>
-                    <p className="text-sm text-gray-400">ID: {ciudadano.identificacion}</p>
+                    <p className="font-medium text-white">
+                      {usuario.nombres} {usuario.apellidos}
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {usuario.dui} • {usuario.sector}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-400">
-                    {ciudadano.fecha_creacion ? 
-                      new Date(ciudadano.fecha_creacion).toLocaleDateString() : 
+                    {usuario.created_at ? 
+                      new Date(usuario.created_at).toLocaleDateString() : 
                       'Fecha no disponible'
                     }
                   </p>
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${
+                    usuario.is_active === false 
+                      ? 'bg-red-500/20 text-red-400' 
+                      : 'bg-green-500/20 text-green-400'
+                  }`}>
+                    {usuario.is_active === false ? 'Inactivo' : 'Activo'}
+                  </span>
                 </div>
               </div>
             ))}
-            {ciudadanos.length === 0 && (
+            {usuarios.length === 0 && (
               <div className="text-center py-8 text-gray-400">
                 <div className="text-4xl mb-2">👥</div>
-                <p>No hay ciudadanos registrados</p>
+                <p>No hay usuarios registrados</p>
               </div>
             )}
           </div>
@@ -239,22 +290,56 @@ const Dashboard = () => {
       <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="bg-blue-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
-            <div className="text-2xl mb-2">➕</div>
-            <p className="text-sm">Nuevo Ciudadano</p>
+          <button 
+            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center transition-colors"
+            onClick={() => {/* Navegar a registro de usuario */}}
+          >
+            <div className="text-2xl mb-2">👤</div>
+            <p className="text-sm">Nuevo Usuario</p>
           </button>
-          <button className="bg-green-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
-            <div className="text-2xl mb-2">🚁</div>
-            <p className="text-sm">Registrar Drone</p>
+          <button 
+            className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg text-center transition-colors"
+            onClick={() => {/* Navegar a módulo salud */}}
+          >
+            <div className="text-2xl mb-2">🏥</div>
+            <p className="text-sm">Módulo Salud</p>
           </button>
-          <button className="bg-purple-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
-            <div className="text-2xl mb-2">🔒</div>
-            <p className="text-sm">Biometría</p>
+          <button 
+            className="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg text-center transition-colors"
+            onClick={() => {/* Navegar a módulo educación */}}
+          >
+            <div className="text-2xl mb-2">🎓</div>
+            <p className="text-sm">Módulo Educación</p>
           </button>
-          <button className="bg-orange-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
+          <button 
+            className="bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-lg text-center transition-colors"
+            onClick={() => {/* Navegar a reportes */}}
+          >
             <div className="text-2xl mb-2">📊</div>
             <p className="text-sm">Generar Reporte</p>
           </button>
+        </div>
+      </div>
+
+      {/* Información del Sistema */}
+      <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
+        <h2 className="text-xl font-semibold text-white mb-4">Estado del Sistema</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-gray-300">Backend: </span>
+            <span className="text-green-400">Operacional</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-gray-300">Base de datos: </span>
+            <span className="text-green-400">Conectada</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-gray-300">Autenticación: </span>
+            <span className="text-green-400">Activa</span>
+          </div>
         </div>
       </div>
     </div>
