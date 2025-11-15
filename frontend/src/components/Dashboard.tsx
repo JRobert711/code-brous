@@ -1,206 +1,262 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+// src/components/Dashboard.tsx
+import { useEffect, useState } from 'react';
+import { 
+  ciudadanoService, 
+  droneService, 
+  Ciudadano, 
+  Drone,
+} from '../services/api';
 
-const Dashboard: React.FC = () => {
-  // Datos de ejemplo para estadísticas
-  const stats = {
-    totalCiudadanos: '6,542,000',
-    registrosHoy: '1,247',
-    dronesActivos: '12',
-    reconocimientosExitosos: '98.7%',
-    alertasSeguridad: '3'
-  };
+interface DashboardStats {
+  totalCiudadanos: number;
+  dronesActivos: number;
+  totalDrones: number;
+  registrosBiometricos: number;
+  ciudadanosRecientes: number;
+}
 
-  const modules = [
-    {
-      title: "GESTIÓN DE CIUDADANOS",
-      description: "Registro y administración de identidades digitales",
-      icon: "👤",
-      path: "/ciudadanos",
-      color: "from-blue-600 to-cyan-500",
-      stats: "6.5M+ registros"
-    },
-    {
-      title: "BIOMETRÍA AVANZADA",
-      description: "Autenticación por voz, rostro y huellas digitales",
-      icon: "🎙️",
-      path: "/biometria",
-      color: "from-purple-600 to-pink-500",
-      stats: "98.7% precisión"
-    },
-    {
-      title: "VIGILANCIA CON DRONES",
-      description: "Monitoreo en tiempo real y reconocimiento facial",
-      icon: "🚁",
-      path: "/drones",
-      color: "from-green-600 to-emerald-500",
-      stats: "12 drones activos"
-    },
-    {
-      title: "EXPEDIENTES DIGITALES",
-      description: "Historial médico, educativo y laboral unificado",
-      icon: "📁",
-      path: "/expedientes",
-      color: "from-orange-600 to-red-500",
-      stats: "10.2M+ documentos"
-    },
-    {
-      title: "REPORTES DE SEGURIDAD",
-      description: "Análisis y reportes de actividades de seguridad",
-      icon: "📊",
-      path: "/reportes",
-      color: "from-indigo-600 to-blue-500",
-      stats: "247 alertas/mes"
-    },
-    {
-      title: "ADMINISTRACIÓN",
-      description: "Configuración y gestión del sistema central",
-      icon: "⚙️",
-      path: "/admin",
-      color: "from-gray-600 to-slate-500",
-      stats: "Sistema activo"
-    }
-  ];
+const Dashboard = () => {
+  const [ciudadanos, setCiudadanos] = useState<Ciudadano[]>([]);
+  const [drones, setDrones] = useState<Drone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalCiudadanos: 0,
+    dronesActivos: 0,
+    totalDrones: 0,
+    registrosBiometricos: 0,
+    ciudadanosRecientes: 0
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [ciudadanosRes, dronesRes] = await Promise.all([
+          ciudadanoService.getAll(),
+          droneService.getAll()
+        ]);
+        
+        setCiudadanos(ciudadanosRes.data);
+        setDrones(dronesRes.data);
+
+        // Calcular estadísticas básicas
+        const ahora = new Date();
+        const ultimaSemana = new Date(ahora.setDate(ahora.getDate() - 7));
+        
+        const ciudadanosRecientes = ciudadanosRes.data.filter((c: Ciudadano) => 
+          c.fecha_creacion && new Date(c.fecha_creacion) > ultimaSemana
+        ).length;
+
+        setStats({
+          totalCiudadanos: ciudadanosRes.data.length,
+          dronesActivos: dronesRes.data.filter((d: Drone) => d.estado === 'activo').length,
+          totalDrones: dronesRes.data.length,
+          registrosBiometricos: 0, // Placeholder por ahora
+          ciudadanosRecientes
+        });
+
+      } catch (error) {
+        console.error('Error cargando datos del dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const Card = ({ title, value, subtitle, icon, color }: { 
+    title: string; 
+    value: number; 
+    subtitle: string; 
+    icon: string; 
+    color: string;
+  }) => (
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 shadow-lg">
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-gray-400 text-sm font-medium mb-2">{title}</p>
+          <p className={`text-3xl font-bold ${color} mb-1`}>{value}</p>
+          <p className="text-gray-500 text-sm">{subtitle}</p>
+        </div>
+        <div className="text-2xl">{icon}</div>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+          <div className="text-lg text-gray-300">Cargando datos del sistema...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen py-8">
-      {/* Encabezado Principal */}
-      <section className="max-w-7xl mx-auto mb-12">
-        <div className="bg-gradient-to-r from-[#006DFF] via-[#0047AB] to-[#003366] rounded-2xl shadow-2xl p-10 text-white text-center relative overflow-hidden">
-          {/* Efectos de fondo */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-400/10 rounded-full blur-2xl"></div>
-          
-          <h2 className="text-5xl font-extrabold tracking-tight mb-4 relative z-10">
-            SISTEMA DE IDENTIDAD DIGITAL NACIONAL
-          </h2>
-          <p className="text-xl opacity-90 mb-8 leading-relaxed max-w-3xl mx-auto relative z-10">
-            Plataforma centralizada de gestión ciudadana con biometría avanzada 
-            y vigilancia inteligente para El Salvador
-          </p>
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Panel de Control</h1>
+          <p className="text-gray-400">Resumen general del sistema de vigilancia</p>
+        </div>
+        <div className="text-sm text-gray-400">
+          Última actualización: <span className="text-green-400">Ahora</span>
+        </div>
+      </div>
 
-          {/* Estadísticas Rápidas */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 relative z-10">
-            {Object.entries(stats).map(([key, value]) => (
-              <div key={key} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="text-2xl font-bold text-white">{value}</div>
-                <div className="text-sm text-gray-300 capitalize">
-                  {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+      {/* Estadísticas Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card 
+          title="Ciudadanos Registrados" 
+          value={stats.totalCiudadanos}
+          subtitle="Total en el sistema"
+          icon="👥"
+          color="text-blue-400"
+        />
+        
+        <Card 
+          title="Drones Activos" 
+          value={stats.dronesActivos}
+          subtitle={`de ${stats.totalDrones} totales`}
+          icon="🚁"
+          color="text-green-400"
+        />
+        
+        <Card 
+          title="Registros Biométricos" 
+          value={stats.registrosBiometricos}
+          subtitle="Huellas y reconocimiento"
+          icon="🔒"
+          color="text-purple-400"
+        />
+        
+        <Card 
+          title="Nuevos Esta Semana" 
+          value={stats.ciudadanosRecientes}
+          subtitle="Registros recientes"
+          icon="🆕"
+          color="text-yellow-400"
+        />
+      </div>
+
+      {/* Grid Inferior */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Drones Activos */}
+        <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-white">Drones en Operación</h2>
+            <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+              {stats.dronesActivos} activos
+            </span>
+          </div>
+          <div className="space-y-3">
+            {drones.slice(0, 6).map((drone) => (
+              <div 
+                key={drone.id} 
+                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    drone.estado === 'activo' ? 'bg-green-500' : 
+                    drone.estado === 'mantenimiento' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                  <div>
+                    <p className="font-medium text-white">{drone.modelo}</p>
+                    <p className="text-sm text-gray-400">{drone.ubicacion || 'Ubicación no disponible'}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                    drone.estado === 'activo' 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : drone.estado === 'mantenimiento'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {drone.estado}
+                  </span>
                 </div>
               </div>
             ))}
+            {drones.length === 0 && (
+              <div className="text-center py-8 text-gray-400">
+                <div className="text-4xl mb-2">🚁</div>
+                <p>No hay drones registrados</p>
+              </div>
+            )}
           </div>
         </div>
-      </section>
 
-      {/* Módulos del Sistema */}
-      <section className="max-w-7xl mx-auto">
-        <h3 className="text-3xl font-bold text-white text-center mb-8">MÓDULOS PRINCIPALES</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {modules.map((module, index) => (
-            <Link
-              key={index}
-              to={module.path}
-              className="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/50 hover:border-[#006DFF] transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#006DFF]/20"
-            >
-              {/* Efecto de gradiente en hover */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${module.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`}></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-4xl">{module.icon}</span>
-                  <div className="text-sm font-semibold text-gray-400 bg-gray-700/50 px-3 py-1 rounded-full">
-                    {module.stats}
+        {/* Ciudadanos Recientes */}
+        <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-white">Ciudadanos Recientes</h2>
+            <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+              {stats.ciudadanosRecientes} nuevos
+            </span>
+          </div>
+          <div className="space-y-3">
+            {ciudadanos.slice(0, 6).map((ciudadano) => (
+              <div 
+                key={ciudadano.id} 
+                className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-blue-400 font-semibold">
+                      {ciudadano.nombre.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">{ciudadano.nombre}</p>
+                    <p className="text-sm text-gray-400">ID: {ciudadano.identificacion}</p>
                   </div>
                 </div>
-                
-                <h4 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-200 transition-colors">
-                  {module.title}
-                </h4>
-                
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  {module.description}
-                </p>
-                
-                <div className="flex items-center text-cyan-400 font-semibold text-sm">
-                  Acceder al módulo
-                  <svg 
-                    className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">
+                    {ciudadano.fecha_creacion ? 
+                      new Date(ciudadano.fecha_creacion).toLocaleDateString() : 
+                      'Fecha no disponible'
+                    }
+                  </p>
                 </div>
               </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Alertas y Notificaciones */}
-      <section className="max-w-7xl mx-auto mt-12">
-        <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <div>
-                <h4 className="text-lg font-bold text-white">ALERTAS DE SEGURIDAD ACTIVAS</h4>
-                <p className="text-gray-300 text-sm">
-                  {stats.alertasSeguridad} incidentes requieren atención inmediata
-                </p>
+            ))}
+            {ciudadanos.length === 0 && (
+              <div className="text-center py-8 text-gray-400">
+                <div className="text-4xl mb-2">👥</div>
+                <p>No hay ciudadanos registrados</p>
               </div>
-            </div>
-            <Link 
-              to="/alertas" 
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-            >
-              Ver Alertas
-            </Link>
+            )}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Información Adicional */}
-      <section className="max-w-7xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 backdrop-blur-sm rounded-2xl p-6 border border-cyan-500/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">✓</span>
-            </div>
-            <h4 className="text-lg font-bold text-white">Sistema Operativo</h4>
-          </div>
-          <p className="text-gray-300 text-sm">
-            Todos los módulos funcionando correctamente. Sin interrupciones reportadas.
-          </p>
+      {/* Quick Actions */}
+      <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6">
+        <h2 className="text-xl font-semibold text-white mb-4">Acciones Rápidas</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button className="bg-blue-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
+            <div className="text-2xl mb-2">➕</div>
+            <p className="text-sm">Nuevo Ciudadano</p>
+          </button>
+          <button className="bg-green-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
+            <div className="text-2xl mb-2">🚁</div>
+            <p className="text-sm">Registrar Drone</p>
+          </button>
+          <button className="bg-purple-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
+            <div className="text-2xl mb-2">🔒</div>
+            <p className="text-sm">Biometría</p>
+          </button>
+          <button className="bg-orange-600 text-white p-4 rounded-lg text-center opacity-50 cursor-not-allowed">
+            <div className="text-2xl mb-2">📊</div>
+            <p className="text-sm">Generar Reporte</p>
+          </button>
         </div>
-
-        <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 backdrop-blur-sm rounded-2xl p-6 border border-emerald-500/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">📈</span>
-            </div>
-            <h4 className="text-lg font-bold text-white">Rendimiento</h4>
-          </div>
-          <p className="text-gray-300 text-sm">
-            Tiempo de respuesta: 124ms. Capacidad utilizada: 67%.
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">🛡️</span>
-            </div>
-            <h4 className="text-lg font-bold text-white">Seguridad</h4>
-          </div>
-          <p className="text-gray-300 text-sm">
-            Protocolos de seguridad activos. Cifrado AES-256 implementado.
-          </p>
-        </div>
-      </section>
+      </div>
     </div>
   );
 };
