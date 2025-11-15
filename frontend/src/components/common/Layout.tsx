@@ -46,7 +46,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 { path: "/dashboard", label: "INICIO" },
                 { path: "/usuarios", label: "USUARIOS" },
                 { path: "/biometria", label: "BIOMETRÍA" },
-                { path: "/admin", label: "ADMINISTRACIÓN" },
               ].map(({ path, label }) => (
                 <Link
                   key={path}
