@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from backend.routes.auth.routes import router as auth_router
+from backend.app.api.routes.hello import router as hello_router
 
 app = FastAPI()
 
-app.include_router(auth_router, prefix="/auth")
+app.include_router(hello_router, prefix="/api", tags=["hello"])
 
 @app.get("/")
-def health():
-    return {"status": "OK"}
+def root():
+    return {"message": "Backend funcionando correctamente 🚀"}

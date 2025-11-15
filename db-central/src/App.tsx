@@ -1,57 +1,18 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
-import VoiceLogin from './components/VoiceLogin.tsx';
-import Dashboard from './components/Dashboard';
-import DroneMonitor from './components/DroneMonitor';
+// src/App.tsx
 import './styles/App.css';
 
-const CameraComponent: React.FC = () => {
-  return <div>Camera</div>;
-};
-
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              isAuthenticated ? 
-              <Navigate to="/dashboard" /> : 
-              <VoiceLogin onLoginSuccess={() => setIsAuthenticated(true)} />
-            } 
-          />
-          <Route 
-            path="/dashboard" 
-            element={
-              isAuthenticated ? 
-              <Dashboard /> : 
-              <Navigate to="/" />
-            } 
-          />
-          <Route 
-            path="/camera" 
-            element={
-              isAuthenticated ? 
-              <CameraComponent /> : 
-              <Navigate to="/" />
-            } 
-          />
-          <Route 
-            path="/drones" 
-            element={
-              isAuthenticated ? 
-              <DroneMonitor /> : 
-              <Navigate to="/" />
-            } 
-          />
-        </Routes>
+    <div className="App" style={{ padding: '20px' }}>
+      <h1>✅ La aplicación está funcionando</h1>
+      <p>Si ves este mensaje, React está renderizando correctamente.</p>
+      <div style={{ marginTop: '20px', padding: '20px', background: '#f0f0f0', borderRadius: '10px' }}>
+        <h3>Prueba los componentes:</h3>
+        <button onClick={() => alert('Funciona!')} style={{ padding: '10px 20px', margin: '5px' }}>
+          Botón de prueba
+        </button>
       </div>
-    </Router>
+    </div>
   );
 }
 
