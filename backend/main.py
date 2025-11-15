@@ -1,9 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta
 import random
+
+# Importa tus routers
+from app.api.routes.audio import router as audio_router
+from app.api.routes.tasks import router as tasks_router
 
 app = FastAPI(title="KeyProject API", version="1.0.0")
 
@@ -155,6 +159,11 @@ biometricos_db = [
     )
 ]
 
+# ========== INCLUIR ROUTERS ==========
+
+app.include_router(audio_router, prefix="/api/v1")
+app.include_router(tasks_router, prefix="/api/v1")
+
 # ========== ENDPOINTS ==========
 
 @app.get("/")
@@ -162,7 +171,7 @@ def root():
     return {
         "message": "🚀 KeyProject Backend funcionando",
         "version": "1.0",
-        "modulos": ["Ciudadanos", "Drones", "Biometría"],
+        "modulos": ["Ciudadanos", "Drones", "Biometría", "Procesamiento Asíncrono"],
         "status": "operacional"
     }
 
@@ -280,6 +289,18 @@ async def health_check():
             "drones": len(drones_db),
             "biometricos": len(biometricos_db)
         }
+    }
+
+# Endpoint de prueba para tareas asíncronas
+@app.get("/test-async")
+async def test_async():
+    """Endpoint para probar que las tareas asíncronas funcionan"""
+    from app.tasks.audio_tasks import process_audio_task
+    task = process_audio_task.delay(b"fake_audio_data", "test.wav")
+    return {
+        "message": "¡Tareas asíncronas funcionando!",
+        "task_id": task.id,
+        "test_url": f"/api/v1/tasks/{task.id}/status"
     }
 
 if __name__ == "__main__":

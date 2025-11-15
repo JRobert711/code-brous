@@ -21,3 +21,9 @@ python-dotenv==1.0.0
 # TESTING
 pytest==7.4.0
 pytest-asyncio==0.21.0
+
+redis==5.0.7
+celery==5.3.6
+sqlalchemy==2.0.35
+alembic==1.14.0
+psycopg2-binary==2.9.10
