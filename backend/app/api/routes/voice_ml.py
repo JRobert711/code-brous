@@ -1,5 +1,5 @@
 # app/api/routes/voice_ml.py
-import speechrecognition as sr
+import speech_recognition as sr
 import librosa
 import numpy as np
 import hashlib
