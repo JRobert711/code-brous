@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 
-const Biometria: React.FC = () => {
+const FaceRecognition = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [faceDetected, setFaceDetected] = useState(false);
 
   useEffect(() => {
-    const loadModelsAndStartVideo = async () => {
-      // Carga los modelos
+    const startVideo = async () => {
+      // Cargar modelo
       await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
 
       if (videoRef.current) {
@@ -21,7 +21,7 @@ const Biometria: React.FC = () => {
       }
     };
 
-    loadModelsAndStartVideo();
+    startVideo();
   }, []);
 
   const handleVideoPlay = () => {
@@ -34,16 +34,12 @@ const Biometria: React.FC = () => {
         new faceapi.TinyFaceDetectorOptions()
       );
 
-      // Ajustar canvas al tamaño del video
+      // Dibujar en canvas
       const canvas = canvasRef.current;
-      const displaySize = {
-        width: videoRef.current.width,
-        height: videoRef.current.height,
-      };
+      const displaySize = { width: videoRef.current.width, height: videoRef.current.height };
       faceapi.matchDimensions(canvas, displaySize);
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
-      // Dibujar detecciones
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -58,35 +54,27 @@ const Biometria: React.FC = () => {
   };
 
   return (
-    <div style={{ position: "relative", width: 960, height: 720, margin: "0 auto" }}>
+    <div style={{ position: "relative", width: 720, height: 560 }}>
       <video
         ref={videoRef}
         autoPlay
         muted
         onPlay={handleVideoPlay}
-        width={960}
-        height={720}
-        style={{ borderRadius: 12, border: "3px solid gray" }}
+        width={720}
+        height={560}
+        style={{ borderRadius: 8, border: "2px solid gray" }}
       />
       <canvas
         ref={canvasRef}
-        width={960}
-        height={720}
+        width={720}
+        height={560}
         style={{ position: "absolute", top: 0, left: 0 }}
       />
-      <p
-        style={{
-          color: faceDetected ? "lime" : "red",
-          fontWeight: "bold",
-          fontSize: 24,
-          textAlign: "center",
-          marginTop: 10,
-        }}
-      >
-        {faceDetected ? "¡Cara detectada!" : "No se detecta cara"}
+      <p style={{ color: faceDetected ? "green" : "red", fontWeight: "bold" }}>
+        {faceDetected ? "Cara detectada" : "No se detecta cara"}
       </p>
     </div>
   );
 };
 
-export default Biometria;
+export default FaceRecognition;
