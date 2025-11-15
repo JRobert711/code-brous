@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
 # Importar todos los routers
+# Routers
 from backend.app.routes.auth import router as auth_router
 from backend.app.routes.usuarios import router as usuarios_router
 from backend.app.routes.salud import router as salud_router
@@ -17,6 +18,7 @@ app = FastAPI(title="Sistema Nacional de Identidad", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # ← Este es importante
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,10 +64,11 @@ def root():
 async def health_check():
     return {
         "status": "healthy", 
+        "status": "healthy",
         "timestamp": datetime.now(),
         "system": "Sistema Nacional de Identidad"
     }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)    uvicorn.run(app, host="0.0.0.0", port=8000)

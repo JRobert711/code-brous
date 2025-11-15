@@ -259,6 +259,7 @@ export interface DashboardStats {
 export interface LoginRequest {
   dui: string;
   password: string;
+  captcha_token: string;
 }
 
 export interface LoginResponse {
